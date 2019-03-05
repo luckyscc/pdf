@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .policy-content {
+            width: 650px;
+            height: 792px;
+            border: 1px solid #666;
+            margin: 0 auto;
+            overflow: auto;
+        }
+    </style>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="pdf.js"></script>
+    <script type="text/javascript" src="pdf.worker.js"></script>
+</head>
+<body>
+    <div class="policy-content"></div>
+    <script>
+        var url = '1.pdf';
+        var length = 5;
+        PDFJS.workerSrc ='pdf.worker.js';
+        pdf();
+        function pdf() {
+            PDFJS.getDocument(url).then(function getPdfHelloWorld(pdf) {
+                var len = pdf.numPages;
+                for(let i = length - 4;i <= length;i++) {
+                    pdf.getPage(i).then(function getPageHelloWorld(page) {
+                        if(length > len) {
+                            return;
+                        }
+                        console.log(page);
+                        var scale = 1;
+                        var viewport = page.getViewport(scale);
+                        var canvasDom = $("<canvas id='canvas"+i+"'></canvas>");
+                        $(".policy-content").append(canvasDom);
+                        var canvasDoms = $("#canvas"+i)[0];
+                        canvasDoms.height = viewport.height;
+                        canvasDoms.width = viewport.width;
+                        var context = canvasDoms.getContext('2d');
+                        var renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                    });
+                }
+            });
+        }
+
+        $(".policy-content").scroll(function() {
+            var height = $('.policy-content').height();
+            var scrollTop = $('.policy-content').scrollTop();
+            var scrollHeight = height + scrollTop;
+            if(scrollHeight  >= (length * height + 20)) {
+                length += 5;
+                pdf();
+            }
+        })
+    </script>
+</body>
+</html>
